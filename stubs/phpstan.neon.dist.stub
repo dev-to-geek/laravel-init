@@ -3,7 +3,7 @@ includes:
 parameters:
 
     paths:
-        - src/
+        - app/
 
     # Level 10 is the highest level
     level: 10
