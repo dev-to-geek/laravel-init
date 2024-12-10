@@ -36,7 +36,6 @@ class InstallCommand extends Command
                 }
             },
             message: 'Installing pint...');
-
         $this->info('✅ Pint installed successfully');
 
         // - install larastan via composer
@@ -144,6 +143,12 @@ class InstallCommand extends Command
             message: 'Updating composer...'
         );
         $this->info('✅ Composer updated successfully');
+
+        $this->info('For your convenience, you can add these lines to composer.json');
+        $this->info('"test": "@php artisan test",');
+        $this->info('"test-coverage": "@php artisan test --parallel --coverage"');
+        $this->info('"analyse": "vendor/bin/phpstan analyse --memory-limit=2G"');
+        $this->info('"format": "vendor/bin/pint"');
 
         return self::SUCCESS;
     }
