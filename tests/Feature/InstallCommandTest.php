@@ -5,6 +5,10 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 
+beforeEach(function () {
+    File::spy();
+});
+
 it('can run laravel-init:install command', function () {
 
     // Arrange
@@ -30,7 +34,6 @@ it('can run laravel-init:install command', function () {
 });
 
 it('fails if cannot install pint', function () {
-
     // Arrange
     Process::fake([
         'composer require laravel/pint*' => Process::result(
@@ -72,7 +75,6 @@ it('installs pint with the right command', function () {
 
 it('copy pint stub configuration file', function () {
     // Arrange
-    File::spy();
     File::shouldReceive()
         ->copy()
         ->andReturn(true);
@@ -96,7 +98,6 @@ it('fails if cannot copy pint stub configuration file', function () {
     // Arrange
     File::shouldReceive('copy')
         ->andReturn(false);
-
     Process::fake();
 
     // Act & Assert
@@ -157,7 +158,6 @@ it('copy larastan stub configuration file', function () {
     File::spy();
     File::shouldReceive('copy')
         ->andReturn(true);
-
     Process::fake();
 
     $expectedSource = realpath(__DIR__.'/../../stubs/phpstan.neon.dist.stub');
@@ -176,18 +176,289 @@ it('copy larastan stub configuration file', function () {
 it('fails if cannot copy phpstan stub configuration file', function () {
     // Arrange
     File::shouldReceive('copy')
-        ->andReturnTrue()
+        ->withArgs(function ($source, $destination) {
+            return Str::of($source)->endsWith('phpstan.neon.dist.stub');
+        })
+        ->andReturnFalse()
         ->once();
 
     File::shouldReceive('copy')
-        ->andReturnFalse()
-        ->times(1);
-
+        ->andReturnTrue();
     Process::fake();
 
     // Act & Assert
     $this->artisan('laravel-init:install')
         ->expectsOutputToContain('Failed to copy phpstan configuration file')
         ->assertExitCode(1);
+});
 
+it('fails if cannot install pest', function () {
+    // Arrange
+    File::shouldReceive('copy')
+        ->andReturnTrue();
+    Process::fake([
+        'composer require pestphp/pest*' => Process::result(
+            exitCode: 1
+        ),
+        '*' => Process::result( //fake all other commands
+            exitCode: 0
+        ),
+    ]);
+
+    // Act & Assert
+    $this->artisan('laravel-init:install')
+        ->expectsOutputToContain('Failed to install pestphp')
+        ->assertExitCode(1);
+});
+
+it('removes phpunit before to install pest', function () {
+    // Arrange
+    File::shouldReceive('copy')
+        ->andReturnTrue();
+    Process::fake();
+
+    // Act
+    $this->artisan('laravel-init:install');
+
+    // Assert
+    Process::assertRan('composer remove phpunit/phpunit -n');
+    Process::assertRan('composer require pestphp/pest --dev --with-all-dependencies -n');
+});
+
+it('installs and inits pest with the right commands', function () {
+    // Arrange
+    File::shouldReceive('copy')
+        ->andReturnTrue();
+    Process::fake();
+
+    // Act
+    $this->artisan('laravel-init:install');
+
+    // Assert
+    Process::assertRan('composer remove phpunit/phpunit -n');
+    Process::assertRan('composer require pestphp/pest --dev --with-all-dependencies -n');
+    Process::assertRan('./vendor/bin/pest --init');
+    Process::assertRan('composer require mockery/mockery --dev -n');
+    Process::assertRan('composer require pestphp/pest-plugin-faker --dev -n');
+    Process::assertRan('composer require pestphp/pest-plugin-laravel --dev -n');
+    Process::assertRan('composer require pestphp/pest-plugin-livewire --dev -n');
+});
+
+it('fails if cannot init pest', function () {
+    // Arrange
+    File::shouldReceive('copy')
+        ->andReturn(true);
+
+    Process::fake([
+        './vendor/bin/pest --init' => Process::result(
+            exitCode: 1
+        ),
+        '*' => Process::result( //fake all other commands
+            exitCode: 0
+        ),
+    ]);
+
+    // Act
+    $this->artisan('laravel-init:install')
+        ->assertExitCode(1)
+        ->expectsOutputToContain('Failed to init pest');
+
+});
+
+it('fails if cannot install mockery', function () {
+    // Arrange
+    File::shouldReceive('copy')
+        ->andReturn(true);
+
+    Process::fake([
+        'composer require mockery/mockery --dev*' => Process::result(
+            exitCode: 1
+        ),
+        '*' => Process::result( //fake all other commands
+            exitCode: 0
+        ),
+    ]);
+
+    // Act
+    $this->artisan('laravel-init:install')
+        ->assertExitCode(1)
+        ->expectsOutputToContain('Failed to install mockery');
+
+});
+
+it('fails if cannot install faker', function () {
+    // Arrange
+    File::shouldReceive('copy')
+        ->andReturn(true);
+
+    Process::fake([
+        'composer require pestphp/pest-plugin-faker --dev*' => Process::result(
+            exitCode: 1
+        ),
+        '*' => Process::result( //fake all other commands
+            exitCode: 0
+        ),
+    ]);
+
+    // Act
+    $this->artisan('laravel-init:install')
+        ->assertExitCode(1)
+        ->expectsOutputToContain('Failed to install pest plugin faker');
+
+});
+
+it('fails if cannot install pest plugin laravel', function () {
+    // Arrange
+    File::shouldReceive('copy')
+        ->andReturn(true);
+
+    Process::fake([
+        'composer require pestphp/pest-plugin-laravel --dev*' => Process::result(
+            exitCode: 1
+        ),
+        '*' => Process::result( //fake all other commands
+            exitCode: 0
+        ),
+    ]);
+
+    // Act
+    $this->artisan('laravel-init:install')
+        ->assertExitCode(1)
+        ->expectsOutputToContain('Failed to install pest plugin laravel');
+
+});
+
+it('fails if cannot install pest plugin livewire', function () {
+    // Arrange
+    File::shouldReceive('copy')
+        ->andReturn(true);
+
+    Process::fake([
+        'composer require pestphp/pest-plugin-livewire --dev*' => Process::result(
+            exitCode: 1
+        ),
+        '*' => Process::result( //fake all other commands
+            exitCode: 0
+        ),
+    ]);
+
+    // Act
+    $this->artisan('laravel-init:install')
+        ->assertExitCode(1)
+        ->expectsOutputToContain('Failed to install pest plugin livewire');
+
+});
+
+it('installs pail with the right command', function () {
+    // Arrange
+    File::shouldReceive('copy')
+        ->andReturn(true);
+
+    Process::fake([
+        'composer require laravel/pail -n' => Process::result(
+            exitCode: 0
+        ),
+        '*' => Process::result( //fake all other commands
+            exitCode: 0
+        ),
+    ]);
+
+    // Act
+    $this->artisan('laravel-init:install');
+
+    // Assert
+    Process::assertRan('composer require laravel/pail -n');
+});
+
+it('fails if cannot install pail', function () {
+    // Arrange
+    File::shouldReceive('copy')
+        ->andReturn(true);
+
+    Process::fake([
+        'composer require laravel/pail -n' => Process::result(
+            exitCode: 1
+        ),
+        '*' => Process::result( //fake all other commands
+            exitCode: 0
+        ),
+    ]);
+
+    // Act & Assert
+    $this->artisan('laravel-init:install')
+        ->expectsOutputToContain('Failed to install pail')
+        ->assertExitCode(1);
+});
+
+it('accepts remove-me option', function () {
+    // Arrange
+    File::shouldReceive('copy')
+        ->andReturn(true);
+    Process::fake();
+
+    // Act
+    $this->artisan('laravel-init:install --remove-me')
+        ->assertExitCode(0);
+});
+
+it('removes itself from composer if option remove-me is true', function () {
+    // Arrange
+    File::shouldReceive('copy')
+        ->andReturn(true);
+    Process::fake();
+
+    // Act
+    $this->artisan('laravel-init:install --remove-me');
+
+    // Assert
+    Process::assertRan('composer remove dev-to-geek/laravel-init -n');
+
+});
+
+it('runs composer update command', function () {
+    // Arrange
+    File::shouldReceive('copy')
+        ->andReturn(true);
+    Process::fake();
+
+    // Act
+    $this->artisan('laravel-init:install');
+
+    // Assert
+    Process::assertRan('composer update -Wn');
+});
+
+it('fails if cannot run composer update', function () {
+    // Arrange
+    File::shouldReceive('copy')
+        ->andReturn(true);
+
+    Process::fake([
+        'composer update -Wn' => Process::result(
+            exitCode: 1
+        ),
+        '*' => Process::result( //fake all other commands
+            exitCode: 0
+        ),
+    ]);
+
+    // Act & Assert
+    $this->artisan('laravel-init:install')
+        ->expectsOutputToContain('Failed to update composer')
+        ->assertExitCode(1);
+});
+
+it('shows a snippet to add to composer.json', function () {
+    // Arrange
+    File::shouldReceive('copy')
+        ->andReturn(true);
+    Process::fake();
+
+    // Act & Assert
+    $this->artisan('laravel-init:install')
+        ->expectsOutput('For your convenience, you can add these lines to composer.json')
+        ->expectsOutput('"test": "@php artisan test",')
+        ->expectsOutput('"test-coverage": "@php artisan test --parallel --coverage"')
+        ->expectsOutput('"analyse": "vendor/bin/phpstan analyse --memory-limit=2G"')
+        ->expectsOutput('"format": "vendor/bin/pint"');
 });
