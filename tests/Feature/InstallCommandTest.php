@@ -5,11 +5,11 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 
-beforeEach(function () {
+beforeEach(function (): void {
     File::spy();
 });
 
-it('can run laravel-init:install command', function () {
+it('can run laravel-init:install command', function (): void {
 
     // Arrange
     File::shouldReceive('exists')
@@ -33,7 +33,7 @@ it('can run laravel-init:install command', function () {
 
 });
 
-it('fails if cannot install pint', function () {
+it('fails if cannot install pint', function (): void {
     // Arrange
     Process::fake([
         'composer require laravel/pint*' => Process::result(
@@ -50,7 +50,7 @@ it('fails if cannot install pint', function () {
         ->assertExitCode(1);
 });
 
-it('installs pint with the right command', function () {
+it('installs pint with the right command', function (): void {
     // Arrange
     File::shouldReceive('exists')
         ->andReturn(false);
@@ -73,7 +73,7 @@ it('installs pint with the right command', function () {
     Process::assertRan('composer require laravel/pint --dev -n');
 });
 
-it('copy pint stub configuration file', function () {
+it('copy pint stub configuration file', function (): void {
     // Arrange
     File::shouldReceive()
         ->copy()
@@ -87,14 +87,12 @@ it('copy pint stub configuration file', function () {
     $this->artisan('laravel-init:install');
 
     File::shouldHaveReceived('copy')
-        ->withArgs(function ($source, $destination) use ($expectedSource) {
-            return realpath($source) === $expectedSource &&
-                str_ends_with($destination, 'pint.json');
-        })
+        ->withArgs(fn($source, $destination): bool => realpath($source) === $expectedSource &&
+            str_ends_with((string) $destination, 'pint.json'))
         ->once();
 });
 
-it('fails if cannot copy pint stub configuration file', function () {
+it('fails if cannot copy pint stub configuration file', function (): void {
     // Arrange
     File::shouldReceive('copy')
         ->andReturn(false);
@@ -107,7 +105,7 @@ it('fails if cannot copy pint stub configuration file', function () {
 
 });
 
-it('fails if cannot install larastan', function () {
+it('fails if cannot install larastan', function (): void {
 
     // Arrange
     File::shouldReceive('exists')
@@ -130,7 +128,7 @@ it('fails if cannot install larastan', function () {
         ->assertExitCode(1);
 });
 
-it('installs larastan with the right command', function () {
+it('installs larastan with the right command', function (): void {
     // Arrange
     File::shouldReceive('exists')
         ->andReturn(false);
@@ -153,7 +151,7 @@ it('installs larastan with the right command', function () {
     Process::assertRan('composer require --dev "larastan/larastan:^3.0" -n');
 });
 
-it('copy larastan stub configuration file', function () {
+it('copy larastan stub configuration file', function (): void {
     // Arrange
     File::spy();
     File::shouldReceive('copy')
@@ -166,19 +164,15 @@ it('copy larastan stub configuration file', function () {
     $this->artisan('laravel-init:install');
 
     File::shouldHaveReceived('copy')
-        ->withArgs(function ($source, $destination) use ($expectedSource) {
-            return realpath($source) === $expectedSource &&
-                str_ends_with($destination, 'phpstan.neon.dist');
-        })
+        ->withArgs(fn($source, $destination): bool => realpath($source) === $expectedSource &&
+            str_ends_with((string) $destination, 'phpstan.neon.dist'))
         ->once();
 });
 
-it('fails if cannot copy phpstan stub configuration file', function () {
+it('fails if cannot copy phpstan stub configuration file', function (): void {
     // Arrange
     File::shouldReceive('copy')
-        ->withArgs(function ($source, $destination) {
-            return Str::of($source)->endsWith('phpstan.neon.dist.stub');
-        })
+        ->withArgs(fn($source, $destination) => Str::of($source)->endsWith('phpstan.neon.dist.stub'))
         ->andReturnFalse()
         ->once();
 
@@ -192,7 +186,7 @@ it('fails if cannot copy phpstan stub configuration file', function () {
         ->assertExitCode(1);
 });
 
-it('fails if cannot install pest', function () {
+it('fails if cannot install pest', function (): void {
     // Arrange
     File::shouldReceive('copy')
         ->andReturnTrue();
@@ -211,7 +205,7 @@ it('fails if cannot install pest', function () {
         ->assertExitCode(1);
 });
 
-it('fails if cannot install rector', function () {
+it('fails if cannot install rector', function (): void {
     // Arrange
     File::shouldReceive('copy')
         ->andReturnTrue();
@@ -230,12 +224,10 @@ it('fails if cannot install rector', function () {
         ->assertExitCode(1);
 });
 
-it('fails if cannot copy rector configuration file', function() {
+it('fails if cannot copy rector configuration file', function(): void {
    // Arrange
     File::shouldReceive('copy')
-        ->withArgs(function ($source, $destination) {
-            return Str::of($source)->endsWith('rector.php.stub');
-        })
+        ->withArgs(fn($source, $destination) => Str::of($source)->endsWith('rector.php.stub'))
         ->andReturnFalse()
         ->once();
 
@@ -248,7 +240,7 @@ it('fails if cannot copy rector configuration file', function() {
         ->assertExitCode(1);
 });
 
-it('removes phpunit before to install pest', function () {
+it('removes phpunit before to install pest', function (): void {
     // Arrange
     File::shouldReceive('copy')
         ->andReturnTrue();
@@ -262,7 +254,7 @@ it('removes phpunit before to install pest', function () {
     Process::assertRan('composer require pestphp/pest --dev --with-all-dependencies -n');
 });
 
-it('installs and inits pest with the right commands', function () {
+it('installs and inits pest with the right commands', function (): void {
     // Arrange
     File::shouldReceive('copy')
         ->andReturnTrue();
@@ -281,7 +273,7 @@ it('installs and inits pest with the right commands', function () {
     Process::assertRan('composer require pestphp/pest-plugin-livewire --dev -n');
 });
 
-it('fails if cannot init pest', function () {
+it('fails if cannot init pest', function (): void {
     // Arrange
     File::shouldReceive('copy')
         ->andReturn(true);
@@ -302,7 +294,7 @@ it('fails if cannot init pest', function () {
 
 });
 
-it('fails if cannot install mockery', function () {
+it('fails if cannot install mockery', function (): void {
     // Arrange
     File::shouldReceive('copy')
         ->andReturn(true);
@@ -323,7 +315,7 @@ it('fails if cannot install mockery', function () {
 
 });
 
-it('fails if cannot install faker', function () {
+it('fails if cannot install faker', function (): void {
     // Arrange
     File::shouldReceive('copy')
         ->andReturn(true);
@@ -344,7 +336,7 @@ it('fails if cannot install faker', function () {
 
 });
 
-it('fails if cannot install pest plugin laravel', function () {
+it('fails if cannot install pest plugin laravel', function (): void {
     // Arrange
     File::shouldReceive('copy')
         ->andReturn(true);
@@ -365,7 +357,7 @@ it('fails if cannot install pest plugin laravel', function () {
 
 });
 
-it('fails if cannot install pest plugin livewire', function () {
+it('fails if cannot install pest plugin livewire', function (): void {
     // Arrange
     File::shouldReceive('copy')
         ->andReturn(true);
@@ -386,7 +378,7 @@ it('fails if cannot install pest plugin livewire', function () {
 
 });
 
-it('installs pail with the right command', function () {
+it('installs pail with the right command', function (): void {
     // Arrange
     File::shouldReceive('copy')
         ->andReturn(true);
@@ -407,7 +399,7 @@ it('installs pail with the right command', function () {
     Process::assertRan('composer require laravel/pail -n');
 });
 
-it('fails if cannot install pail', function () {
+it('fails if cannot install pail', function (): void {
     // Arrange
     File::shouldReceive('copy')
         ->andReturn(true);
@@ -427,7 +419,7 @@ it('fails if cannot install pail', function () {
         ->assertExitCode(1);
 });
 
-it('accepts remove-me option', function () {
+it('accepts remove-me option', function (): void {
     // Arrange
     File::shouldReceive('copy')
         ->andReturn(true);
@@ -438,7 +430,7 @@ it('accepts remove-me option', function () {
         ->assertExitCode(0);
 });
 
-it('removes itself from composer if option remove-me is true', function () {
+it('removes itself from composer if option remove-me is true', function (): void {
     // Arrange
     File::shouldReceive('copy')
         ->andReturn(true);
@@ -452,7 +444,7 @@ it('removes itself from composer if option remove-me is true', function () {
 
 });
 
-it('runs composer update command', function () {
+it('runs composer update command', function (): void {
     // Arrange
     File::shouldReceive('copy')
         ->andReturn(true);
@@ -465,7 +457,7 @@ it('runs composer update command', function () {
     Process::assertRan('composer update -Wn');
 });
 
-it('fails if cannot run composer update', function () {
+it('fails if cannot run composer update', function (): void {
     // Arrange
     File::shouldReceive('copy')
         ->andReturn(true);
@@ -485,7 +477,7 @@ it('fails if cannot run composer update', function () {
         ->assertExitCode(1);
 });
 
-it('shows a snippet to add to composer.json', function () {
+it('shows a snippet to add to composer.json', function (): void {
     // Arrange
     File::shouldReceive('copy')
         ->andReturn(true);

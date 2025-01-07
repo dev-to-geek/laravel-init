@@ -15,11 +15,11 @@ class TestCase extends Orchestra
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'Dev2Geek\\LaravelInit\\Database\\Factories\\'.class_basename($modelName).'Factory'
+            fn (string $modelName): string => 'Dev2Geek\\LaravelInit\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
     }
 
-    public function getEnvironmentSetUp($app)
+    public function getEnvironmentSetUp($app): void
     {
         config()->set('database.default', 'testing');
 
