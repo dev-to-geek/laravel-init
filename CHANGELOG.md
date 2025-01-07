@@ -2,6 +2,10 @@
 
 All notable changes to `laravel-init` will be documented in this file.
 
+## Added Rector installation - 2025-01-07
+
+**Full Changelog**: https://github.com/dev-to-geek/laravel-init/compare/0.1.2...0.1.3
+
 ## v0.1.2 - 2024-12-13
 
 full test coverage
