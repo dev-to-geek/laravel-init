@@ -39,7 +39,7 @@ it('fails if cannot install pint', function (): void {
         'composer require laravel/pint*' => Process::result(
             exitCode: 1
         ),
-        '*' => Process::result( //fake all other commands
+        '*' => Process::result( // fake all other commands
             exitCode: 0
         ),
     ]);
@@ -61,7 +61,7 @@ it('installs pint with the right command', function (): void {
         'composer require laravel/pint --dev -n' => Process::result(
             exitCode: 0
         ),
-        '*' => Process::result( //fake all other commands
+        '*' => Process::result( // fake all other commands
             exitCode: 0
         ),
     ]);
@@ -87,7 +87,7 @@ it('copy pint stub configuration file', function (): void {
     $this->artisan('laravel-init:install');
 
     File::shouldHaveReceived('copy')
-        ->withArgs(fn($source, $destination): bool => realpath($source) === $expectedSource &&
+        ->withArgs(fn ($source, $destination): bool => realpath($source) === $expectedSource &&
             str_ends_with((string) $destination, 'pint.json'))
         ->once();
 });
@@ -117,7 +117,7 @@ it('fails if cannot install larastan', function (): void {
         'composer require --dev "larastan/larastan:*' => Process::result(
             exitCode: 1
         ),
-        '*' => Process::result( //fake all other commands
+        '*' => Process::result( // fake all other commands
             exitCode: 0
         ),
     ]);
@@ -139,7 +139,7 @@ it('installs larastan with the right command', function (): void {
         'composer require --dev "larastan/larastan:^3.0" -n' => Process::result(
             exitCode: 0
         ),
-        '*' => Process::result( //fake all other commands
+        '*' => Process::result( // fake all other commands
             exitCode: 0
         ),
     ]);
@@ -164,7 +164,7 @@ it('copy larastan stub configuration file', function (): void {
     $this->artisan('laravel-init:install');
 
     File::shouldHaveReceived('copy')
-        ->withArgs(fn($source, $destination): bool => realpath($source) === $expectedSource &&
+        ->withArgs(fn ($source, $destination): bool => realpath($source) === $expectedSource &&
             str_ends_with((string) $destination, 'phpstan.neon.dist'))
         ->once();
 });
@@ -172,7 +172,7 @@ it('copy larastan stub configuration file', function (): void {
 it('fails if cannot copy phpstan stub configuration file', function (): void {
     // Arrange
     File::shouldReceive('copy')
-        ->withArgs(fn($source, $destination) => Str::of($source)->endsWith('phpstan.neon.dist.stub'))
+        ->withArgs(fn ($source, $destination) => Str::of($source)->endsWith('phpstan.neon.dist.stub'))
         ->andReturnFalse()
         ->once();
 
@@ -194,7 +194,7 @@ it('fails if cannot install pest', function (): void {
         'composer require pestphp/pest*' => Process::result(
             exitCode: 1
         ),
-        '*' => Process::result( //fake all other commands
+        '*' => Process::result( // fake all other commands
             exitCode: 0
         ),
     ]);
@@ -213,7 +213,7 @@ it('fails if cannot install rector', function (): void {
         'composer require rector/rector*' => Process::result(
             exitCode: 1
         ),
-        '*' => Process::result( //fake all other commands
+        '*' => Process::result( // fake all other commands
             exitCode: 0
         ),
     ]);
@@ -224,17 +224,17 @@ it('fails if cannot install rector', function (): void {
         ->assertExitCode(1);
 });
 
-it('fails if cannot copy rector configuration file', function(): void {
-   // Arrange
+it('fails if cannot copy rector configuration file', function (): void {
+    // Arrange
     File::shouldReceive('copy')
-        ->withArgs(fn($source, $destination) => Str::of($source)->endsWith('rector.php.stub'))
+        ->withArgs(fn ($source, $destination) => Str::of($source)->endsWith('rector.php.stub'))
         ->andReturnFalse()
         ->once();
 
-     File::shouldReceive('copy')
+    File::shouldReceive('copy')
         ->andReturnTrue();
     Process::fake();
-        // Act & Assert
+    // Act & Assert
     $this->artisan('laravel-init:install')
         ->expectsOutputToContain('Failed to copy rector configuration file')
         ->assertExitCode(1);
@@ -282,7 +282,7 @@ it('fails if cannot init pest', function (): void {
         './vendor/bin/pest --init' => Process::result(
             exitCode: 1
         ),
-        '*' => Process::result( //fake all other commands
+        '*' => Process::result( // fake all other commands
             exitCode: 0
         ),
     ]);
@@ -303,7 +303,7 @@ it('fails if cannot install mockery', function (): void {
         'composer require mockery/mockery --dev*' => Process::result(
             exitCode: 1
         ),
-        '*' => Process::result( //fake all other commands
+        '*' => Process::result( // fake all other commands
             exitCode: 0
         ),
     ]);
@@ -324,7 +324,7 @@ it('fails if cannot install faker', function (): void {
         'composer require pestphp/pest-plugin-faker --dev*' => Process::result(
             exitCode: 1
         ),
-        '*' => Process::result( //fake all other commands
+        '*' => Process::result( // fake all other commands
             exitCode: 0
         ),
     ]);
@@ -345,7 +345,7 @@ it('fails if cannot install pest plugin laravel', function (): void {
         'composer require pestphp/pest-plugin-laravel --dev*' => Process::result(
             exitCode: 1
         ),
-        '*' => Process::result( //fake all other commands
+        '*' => Process::result( // fake all other commands
             exitCode: 0
         ),
     ]);
@@ -366,7 +366,7 @@ it('fails if cannot install pest plugin livewire', function (): void {
         'composer require pestphp/pest-plugin-livewire --dev*' => Process::result(
             exitCode: 1
         ),
-        '*' => Process::result( //fake all other commands
+        '*' => Process::result( // fake all other commands
             exitCode: 0
         ),
     ]);
@@ -387,7 +387,7 @@ it('installs pail with the right command', function (): void {
         'composer require laravel/pail -n' => Process::result(
             exitCode: 0
         ),
-        '*' => Process::result( //fake all other commands
+        '*' => Process::result( // fake all other commands
             exitCode: 0
         ),
     ]);
@@ -408,7 +408,7 @@ it('fails if cannot install pail', function (): void {
         'composer require laravel/pail -n' => Process::result(
             exitCode: 1
         ),
-        '*' => Process::result( //fake all other commands
+        '*' => Process::result( // fake all other commands
             exitCode: 0
         ),
     ]);
@@ -466,7 +466,7 @@ it('fails if cannot run composer update', function (): void {
         'composer update -Wn' => Process::result(
             exitCode: 1
         ),
-        '*' => Process::result( //fake all other commands
+        '*' => Process::result( // fake all other commands
             exitCode: 0
         ),
     ]);
