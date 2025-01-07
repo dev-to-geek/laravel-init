@@ -110,6 +110,25 @@ class InstallCommand extends Command
 
         $this->info('✅ Pail installed successfully');
 
+        // - install rector via composer using Processees
+        spin(
+            callback: function (): void {
+
+                $process = Process::run('composer require rector/rector -n --dev');
+                if ($process->failed()) {
+                    self::fail('❌ Failed to install rector');
+                }
+
+                $result = File::copy(__DIR__.'/../../stubs/rector.php.stub', base_path('rector.php'));
+                if (! $result) {
+                    self::fail('❌ Failed to copy rector configuration file');
+                }
+            },
+            message: 'Installing rector...'
+        );
+
+        $this->info('✅ Rector installed successfully');
+
         if ($this->option('remove-me')) {
             spin(
                 callback: function (): void {
@@ -146,9 +165,10 @@ class InstallCommand extends Command
 
         $this->info('For your convenience, you can add these lines to composer.json');
         $this->info('"test": "@php artisan test",');
-        $this->info('"test-coverage": "@php artisan test --parallel --coverage"');
-        $this->info('"analyse": "vendor/bin/phpstan analyse --memory-limit=2G"');
-        $this->info('"format": "vendor/bin/pint"');
+        $this->info('"test-coverage": "@php artisan test --parallel --coverage",');
+        $this->info('"analyse": "vendor/bin/phpstan analyse --memory-limit=2G",');
+        $this->info('"format": "vendor/bin/pint",');
+        $this->info('"refactor": "vendor/bin/rector"');
 
         return self::SUCCESS;
     }

@@ -211,6 +211,43 @@ it('fails if cannot install pest', function () {
         ->assertExitCode(1);
 });
 
+it('fails if cannot install rector', function () {
+    // Arrange
+    File::shouldReceive('copy')
+        ->andReturnTrue();
+    Process::fake([
+        'composer require rector/rector*' => Process::result(
+            exitCode: 1
+        ),
+        '*' => Process::result( //fake all other commands
+            exitCode: 0
+        ),
+    ]);
+
+    // Act & Assert
+    $this->artisan('laravel-init:install')
+        ->expectsOutputToContain('Failed to install rector')
+        ->assertExitCode(1);
+});
+
+it('fails if cannot copy rector configuration file', function() {
+   // Arrange
+    File::shouldReceive('copy')
+        ->withArgs(function ($source, $destination) {
+            return Str::of($source)->endsWith('rector.php.stub');
+        })
+        ->andReturnFalse()
+        ->once();
+
+     File::shouldReceive('copy')
+        ->andReturnTrue();
+    Process::fake();
+        // Act & Assert
+    $this->artisan('laravel-init:install')
+        ->expectsOutputToContain('Failed to copy rector configuration file')
+        ->assertExitCode(1);
+});
+
 it('removes phpunit before to install pest', function () {
     // Arrange
     File::shouldReceive('copy')
@@ -458,7 +495,9 @@ it('shows a snippet to add to composer.json', function () {
     $this->artisan('laravel-init:install')
         ->expectsOutput('For your convenience, you can add these lines to composer.json')
         ->expectsOutput('"test": "@php artisan test",')
-        ->expectsOutput('"test-coverage": "@php artisan test --parallel --coverage"')
-        ->expectsOutput('"analyse": "vendor/bin/phpstan analyse --memory-limit=2G"')
-        ->expectsOutput('"format": "vendor/bin/pint"');
+        ->expectsOutput('"test-coverage": "@php artisan test --parallel --coverage",')
+        ->expectsOutput('"analyse": "vendor/bin/phpstan analyse --memory-limit=2G",')
+        ->expectsOutput('"format": "vendor/bin/pint",')
+        ->expectsOutput('"refactor": "vendor/bin/rector"');
+
 });
