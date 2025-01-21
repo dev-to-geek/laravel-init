@@ -12,7 +12,7 @@ beforeEach(function (): void {
 
 it('can run laravel-init:install command', function (): void {
     Process::fake();
-        $this->artisan(InstallCommand::class)
+    $this->artisan(InstallCommand::class)
         ->assertExitCode(0);
 });
 
@@ -358,7 +358,7 @@ it('fails if cannot install pest plugin laravel', function (): void {
     ]);
 
     // Act
-        $this->artisan(InstallCommand::class, ['--all' => true])
+    $this->artisan(InstallCommand::class, ['--all' => true])
         ->assertExitCode(1)
         ->expectsOutputToContain('Failed to install pest plugin laravel');
 
@@ -379,7 +379,7 @@ it('fails if cannot install pest plugin livewire', function (): void {
     ]);
 
     // Act
-        $this->artisan(InstallCommand::class, ['--all' => true])
+    $this->artisan(InstallCommand::class, ['--all' => true])
         ->assertExitCode(1)
         ->expectsOutputToContain('Failed to install pest plugin livewire');
 
@@ -400,7 +400,7 @@ it('installs pail with the right command', function (): void {
     ]);
 
     // Act
-        $this->artisan(InstallCommand::class, ['--all' => true]);
+    $this->artisan(InstallCommand::class, ['--all' => true]);
 
     // Assert
     Process::assertRan('composer require laravel/pail -n');
@@ -421,7 +421,7 @@ it('fails if cannot install pail', function (): void {
     ]);
 
     // Act & Assert
-        $this->artisan(InstallCommand::class, ['--all' => true])
+    $this->artisan(InstallCommand::class, ['--all' => true])
         ->expectsOutputToContain('Failed to install pail')
         ->assertExitCode(1);
 });
@@ -458,7 +458,7 @@ it('runs composer update command', function (): void {
     Process::fake();
 
     // Act
-        $this->artisan(InstallCommand::class, ['--all' => true]);
+    $this->artisan(InstallCommand::class, ['--all' => true]);
 
     // Assert
     Process::assertRan('composer update -Wn');
@@ -479,7 +479,7 @@ it('fails if cannot run composer update', function (): void {
     ]);
 
     // Act & Assert
-        $this->artisan(InstallCommand::class, ['--all' => true])
+    $this->artisan(InstallCommand::class, ['--all' => true])
         ->expectsOutputToContain('Failed to update composer')
         ->assertExitCode(1);
 });
@@ -491,7 +491,7 @@ it('shows a snippet to add to composer.json', function (): void {
     Process::fake();
 
     // Act & Assert
-        $this->artisan(InstallCommand::class, ['--all' => true])
+    $this->artisan(InstallCommand::class, ['--all' => true])
         ->expectsOutput('For your convenience, you can add these lines to composer.json')
         ->expectsOutput('"test": "@php artisan test",')
         ->expectsOutput('"test-coverage": "@php artisan test --parallel --coverage",')
