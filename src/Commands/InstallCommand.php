@@ -5,129 +5,59 @@ declare(strict_types=1);
 namespace Dev2Geek\LaravelInit\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 
 use function Laravel\Prompts\spin;
 
 class InstallCommand extends Command
 {
-    public $signature = 'laravel-init:install {--remove-me : Remove the laravel-init package after installation}';
+    public $signature = 'laravel-init:install {--remove-me : Remove the laravel-init package after installation}
+                                              {--all : Install all the packages}';
 
     public $description = 'Install Pint, PhpStan, Pest, Pail.';
 
     public function handle(): int
     {
 
-        /**
-         * install pint via composer
-         */
-        spin(
-            callback: function (): void {
-                $pintProcess = Process::run('composer require laravel/pint --dev -n');
+        if ($this->option('all')) {
+            // - install pint via composer
+            $result = $this->call('laravel-init:install-pint');
+            if ($result !== self::SUCCESS) {
+                self::fail('❌ Failed to install pint');
+            }
+        }
 
-                if ($pintProcess->failed()) {
-                    self::fail('❌ Failed to install pint');
-                }
+        if ($this->option('all')) {
+            // - install larastan via composer
+            $result = $this->call('laravel-init:install-larastan');
+            if ($result !== self::SUCCESS) {
+                self::fail('❌ Failed to install larastan');
+            }
+        }
 
-                $result = File::copy(__DIR__.'/../../stubs/pint.json.stub', base_path('pint.json'));
-                if (! $result) {
-                    self::fail('❌ Failed to copy pint configuration file');
-                }
-            },
-            message: 'Installing pint...');
-        $this->info('✅ Pint installed successfully');
+        if ($this->option('all')) {
+            // - install pest via composer using Processees
+            $result = $this->call('laravel-init:install-pest');
+            if ($result !== self::SUCCESS) {
+                self::fail('❌ Failed to install pest');
+            }
+        }
 
-        // - install larastan via composer
-        spin(
-            callback: function (): void {
-                $process = Process::run('composer require --dev "larastan/larastan:^3.0" -n');
+        if ($this->option('all')) {
+            // - install pail via composer using composer
+            $result = $this->call('laravel-init:install-pail');
+            if ($result !== self::SUCCESS) {
+                self::fail('❌ Failed to install pail');
+            }
+        }
 
-                if ($process->failed()) {
-                    self::fail('❌ Failed to install larastan');
-                }
-
-                $result = File::copy(__DIR__.'/../../stubs/phpstan.neon.dist.stub', base_path('phpstan.neon.dist'));
-                if (! $result) {
-                    self::fail('❌ Failed to copy phpstan configuration file');
-                }
-            },
-            message: 'Installing larastan...');
-
-        $this->info('✅ Larastan installed successfully');
-
-        // - install pest via composer using Processees
-        spin(
-            callback: function (): void {
-                $process = Process::run('composer remove phpunit/phpunit -n');
-
-                $process = Process::run('composer require pestphp/pest --dev --with-all-dependencies -n');
-                if ($process->failed()) {
-                    self::fail('❌ Failed to install pestphp');
-                }
-
-                $process = Process::run('./vendor/bin/pest --init');
-                if ($process->failed()) {
-                    self::fail('❌ Failed to init pest');
-                }
-
-                $process = Process::run('composer require mockery/mockery --dev -n');
-                if ($process->failed()) {
-                    self::fail('❌ Failed to install mockery');
-                }
-
-                $process = Process::run('composer require pestphp/pest-plugin-faker --dev -n');
-                if ($process->failed()) {
-                    self::fail('❌ Failed to install pest plugin faker');
-                }
-
-                $process = Process::run('composer require pestphp/pest-plugin-laravel --dev -n');
-                if ($process->failed()) {
-                    self::fail('❌ Failed to install pest plugin laravel');
-                }
-
-                $process = Process::run('composer require pestphp/pest-plugin-livewire --dev -n');
-                if ($process->failed()) {
-                    self::fail('❌ Failed to install pest plugin livewire');
-                }
-
-            },
-            message: 'Installing pestphp and plugins...');
-
-        $this->info('✅ pestphp installed successfully');
-
-        // - install pail via composer using Processees
-        spin(
-            callback: function (): void {
-
-                $process = Process::run('composer require laravel/pail -n');
-                if ($process->failed()) {
-                    self::fail('❌ Failed to install pail');
-                }
-            },
-            message: 'Installing pail...'
-        );
-
-        $this->info('✅ Pail installed successfully');
-
-        // - install rector via composer using Processees
-        spin(
-            callback: function (): void {
-
-                $process = Process::run('composer require rector/rector -n --dev');
-                if ($process->failed()) {
-                    self::fail('❌ Failed to install rector');
-                }
-
-                $result = File::copy(__DIR__.'/../../stubs/rector.php.stub', base_path('rector.php'));
-                if (! $result) {
-                    self::fail('❌ Failed to copy rector configuration file');
-                }
-            },
-            message: 'Installing rector...'
-        );
-
-        $this->info('✅ Rector installed successfully');
+        if ($this->option('all')) {
+            // - install rector via composer using composer
+            $result = $this->call('laravel-init:install-rector');
+            if ($result !== self::SUCCESS) {
+                self::fail('❌ Failed to install rector');
+            }
+        }
 
         if ($this->option('remove-me')) {
             spin(
@@ -163,13 +93,18 @@ class InstallCommand extends Command
         );
         $this->info('✅ Composer updated successfully');
 
+        $this->showComposerSnippet();
+
+        return self::SUCCESS;
+    }
+
+    public function showComposerSnippet(): void
+    {
         $this->info('For your convenience, you can add these lines to composer.json');
         $this->info('"test": "@php artisan test",');
         $this->info('"test-coverage": "@php artisan test --parallel --coverage",');
         $this->info('"analyse": "vendor/bin/phpstan analyse --memory-limit=2G",');
         $this->info('"format": "vendor/bin/pint",');
         $this->info('"refactor": "vendor/bin/rector"');
-
-        return self::SUCCESS;
     }
 }
