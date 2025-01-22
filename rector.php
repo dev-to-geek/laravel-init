@@ -9,7 +9,7 @@ return RectorConfig::configure()
     ->withPaths([
         __DIR__.'/src',
         __DIR__.'/config',
-        __DIR__.'/tests',
+        __DIR__.'/tests'
     ])
     ->withSkip([
         AddOverrideAttributeToOverriddenMethodsRector::class,
