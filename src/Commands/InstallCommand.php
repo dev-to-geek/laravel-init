@@ -12,14 +12,15 @@ use function Laravel\Prompts\spin;
 class InstallCommand extends Command
 {
     public $signature = 'laravel-init:install {--remove-me : Remove the laravel-init package after installation}
-                                              {--all : Install all the packages}';
+                                              {--code-quality : Install code quality packages: pint, phpstan, pest, pail and rector}
+                                              ';
 
     public $description = 'Install Pint, PhpStan, Pest, Pail.';
 
     public function handle(): int
     {
 
-        if ($this->option('all')) {
+        if ($this->option('code-quality')) {
             // - install pint via composer
             $result = $this->call('laravel-init:install-pint');
             if ($result !== self::SUCCESS) {
@@ -27,7 +28,7 @@ class InstallCommand extends Command
             }
         }
 
-        if ($this->option('all')) {
+        if ($this->option('code-quality')) {
             // - install larastan via composer
             $result = $this->call('laravel-init:install-larastan');
             if ($result !== self::SUCCESS) {
@@ -35,7 +36,7 @@ class InstallCommand extends Command
             }
         }
 
-        if ($this->option('all')) {
+        if ($this->option('code-quality')) {
             // - install pest via composer using Processees
             $result = $this->call('laravel-init:install-pest');
             if ($result !== self::SUCCESS) {
@@ -43,7 +44,7 @@ class InstallCommand extends Command
             }
         }
 
-        if ($this->option('all')) {
+        if ($this->option('code-quality')) {
             // - install pail via composer using composer
             $result = $this->call('laravel-init:install-pail');
             if ($result !== self::SUCCESS) {
@@ -51,7 +52,7 @@ class InstallCommand extends Command
             }
         }
 
-        if ($this->option('all')) {
+        if ($this->option('code-quality')) {
             // - install rector via composer using composer
             $result = $this->call('laravel-init:install-rector');
             if ($result !== self::SUCCESS) {
@@ -93,12 +94,14 @@ class InstallCommand extends Command
         );
         $this->info('✅ Composer updated successfully');
 
-        $this->showComposerSnippet();
+        if ($this->option('code-quality')) {
+            $this->showCodeQualityComposerSnippet();
+        }
 
         return self::SUCCESS;
     }
 
-    public function showComposerSnippet(): void
+    public function showCodeQualityComposerSnippet(): void
     {
         $this->info('For your convenience, you can add these lines to composer.json');
         $this->info('"test": "@php artisan test",');

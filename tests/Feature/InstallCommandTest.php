@@ -16,7 +16,7 @@ it('can run laravel-init:install command', function (): void {
         ->assertExitCode(0);
 });
 
-it('can run laravel-init:install command with `all` option', function (): void {
+it('can run laravel-init:install command with `code-quality` option', function (): void {
 
     // Arrange
     File::shouldReceive('exists')
@@ -31,7 +31,7 @@ it('can run laravel-init:install command with `all` option', function (): void {
     ]);
 
     // Act & Assert
-    $this->artisan('laravel-init:install --all')
+    $this->artisan('laravel-init:install --code-quality')
         ->expectsOutputToContain('Pint installed successfully')
         ->expectsOutputToContain('Larastan installed successfully')
         ->expectsOutputToContain('pestphp installed successfully')
@@ -52,7 +52,7 @@ it('fails if cannot install pint', function (): void {
     ]);
 
     // Act & Assert
-    $this->artisan(InstallCommand::class, ['--all' => true])
+    $this->artisan(InstallCommand::class, ['--code-quality' => true])
         ->expectsOutputToContain('Failed to install pint')
         ->assertExitCode(1);
 });
@@ -74,7 +74,7 @@ it('installs pint with the right command', function (): void {
     ]);
 
     // Act
-    $this->artisan(InstallCommand::class, ['--all' => true]);
+    $this->artisan(InstallCommand::class, ['--code-quality' => true]);
 
     // Assert
     Process::assertRan('composer require laravel/pint --dev -n');
@@ -91,7 +91,7 @@ it('copy pint stub configuration file', function (): void {
     $expectedSource = realpath(__DIR__.'/../../stubs/pint.json.stub');
 
     // Act & Assert
-    $this->artisan(InstallCommand::class, ['--all' => true]);
+    $this->artisan(InstallCommand::class, ['--code-quality' => true]);
 
     File::shouldHaveReceived('copy')
         ->withArgs(fn ($source, $destination): bool => realpath($source) === $expectedSource &&
@@ -106,7 +106,7 @@ it('fails if cannot copy pint stub configuration file', function (): void {
     Process::fake();
 
     // Act & Assert
-    $this->artisan(InstallCommand::class, ['--all' => true])
+    $this->artisan(InstallCommand::class, ['--code-quality' => true])
         ->expectsOutputToContain('Failed to copy pint configuration file')
         ->assertExitCode(1);
 
@@ -130,7 +130,7 @@ it('fails if cannot install larastan', function (): void {
     ]);
 
     // Act & Assert
-    $this->artisan(InstallCommand::class, ['--all' => true])
+    $this->artisan(InstallCommand::class, ['--code-quality' => true])
         ->expectsOutputToContain('Failed to install larastan')
         ->assertExitCode(1);
 });
@@ -152,7 +152,7 @@ it('installs larastan with the right command', function (): void {
     ]);
 
     // Act
-    $this->artisan(InstallCommand::class, ['--all' => true]);
+    $this->artisan(InstallCommand::class, ['--code-quality' => true]);
 
     // Assert
     Process::assertRan('composer require --dev "larastan/larastan:^3.0" -n');
@@ -168,7 +168,7 @@ it('copy larastan stub configuration file', function (): void {
     $expectedSource = realpath(__DIR__.'/../../stubs/phpstan.neon.dist.stub');
 
     // Act & Assert
-    $this->artisan(InstallCommand::class, ['--all' => true]);
+    $this->artisan(InstallCommand::class, ['--code-quality' => true]);
 
     File::shouldHaveReceived('copy')
         ->withArgs(fn ($source, $destination): bool => realpath($source) === $expectedSource &&
@@ -188,7 +188,7 @@ it('fails if cannot copy phpstan stub configuration file', function (): void {
     Process::fake();
 
     // Act & Assert
-    $this->artisan(InstallCommand::class, ['--all' => true])
+    $this->artisan(InstallCommand::class, ['--code-quality' => true])
         ->expectsOutputToContain('Failed to copy phpstan configuration file')
         ->assertExitCode(1);
 });
@@ -207,7 +207,7 @@ it('fails if cannot install pest', function (): void {
     ]);
 
     // Act & Assert
-    $this->artisan(InstallCommand::class, ['--all' => true])
+    $this->artisan(InstallCommand::class, ['--code-quality' => true])
         ->expectsOutputToContain('Failed to install pestphp')
         ->assertExitCode(1);
 });
@@ -226,7 +226,7 @@ it('fails if cannot install rector', function (): void {
     ]);
 
     // Act & Assert
-    $this->artisan(InstallCommand::class, ['--all' => true])
+    $this->artisan(InstallCommand::class, ['--code-quality' => true])
         ->expectsOutputToContain('Failed to install rector')
         ->assertExitCode(1);
 });
@@ -242,7 +242,7 @@ it('fails if cannot copy rector configuration file', function (): void {
         ->andReturnTrue();
     Process::fake();
     // Act & Assert
-    $this->artisan(InstallCommand::class, ['--all' => true])
+    $this->artisan(InstallCommand::class, ['--code-quality' => true])
         ->expectsOutputToContain('Failed to copy rector configuration file')
         ->assertExitCode(1);
 });
@@ -254,7 +254,7 @@ it('removes phpunit before to install pest', function (): void {
     Process::fake();
 
     // Act
-    $this->artisan(InstallCommand::class, ['--all' => true]);
+    $this->artisan(InstallCommand::class, ['--code-quality' => true]);
 
     // Assert
     Process::assertRan('composer remove phpunit/phpunit -n');
@@ -268,7 +268,7 @@ it('installs and inits pest with the right commands', function (): void {
     Process::fake();
 
     // Act
-    $this->artisan(InstallCommand::class, ['--all' => true]);
+    $this->artisan(InstallCommand::class, ['--code-quality' => true]);
 
     // Assert
     Process::assertRan('composer remove phpunit/phpunit -n');
@@ -295,7 +295,7 @@ it('fails if cannot init pest', function (): void {
     ]);
 
     // Act
-    $this->artisan(InstallCommand::class, ['--all' => true])
+    $this->artisan(InstallCommand::class, ['--code-quality' => true])
         ->assertExitCode(1)
         ->expectsOutputToContain('Failed to init pest');
 
@@ -316,7 +316,7 @@ it('fails if cannot install mockery', function (): void {
     ]);
 
     // Act
-    $this->artisan(InstallCommand::class, ['--all' => true])
+    $this->artisan(InstallCommand::class, ['--code-quality' => true])
         ->assertExitCode(1)
         ->expectsOutputToContain('Failed to install mockery');
 
@@ -337,7 +337,7 @@ it('fails if cannot install faker', function (): void {
     ]);
 
     // Act
-    $this->artisan(InstallCommand::class, ['--all' => true])
+    $this->artisan(InstallCommand::class, ['--code-quality' => true])
         ->assertExitCode(1)
         ->expectsOutputToContain('Failed to install pest plugin faker');
 
@@ -358,7 +358,7 @@ it('fails if cannot install pest plugin laravel', function (): void {
     ]);
 
     // Act
-    $this->artisan(InstallCommand::class, ['--all' => true])
+    $this->artisan(InstallCommand::class, ['--code-quality' => true])
         ->assertExitCode(1)
         ->expectsOutputToContain('Failed to install pest plugin laravel');
 
@@ -379,7 +379,7 @@ it('fails if cannot install pest plugin livewire', function (): void {
     ]);
 
     // Act
-    $this->artisan(InstallCommand::class, ['--all' => true])
+    $this->artisan(InstallCommand::class, ['--code-quality' => true])
         ->assertExitCode(1)
         ->expectsOutputToContain('Failed to install pest plugin livewire');
 
@@ -400,7 +400,7 @@ it('installs pail with the right command', function (): void {
     ]);
 
     // Act
-    $this->artisan(InstallCommand::class, ['--all' => true]);
+    $this->artisan(InstallCommand::class, ['--code-quality' => true]);
 
     // Assert
     Process::assertRan('composer require laravel/pail -n');
@@ -421,7 +421,7 @@ it('fails if cannot install pail', function (): void {
     ]);
 
     // Act & Assert
-    $this->artisan(InstallCommand::class, ['--all' => true])
+    $this->artisan(InstallCommand::class, ['--code-quality' => true])
         ->expectsOutputToContain('Failed to install pail')
         ->assertExitCode(1);
 });
@@ -458,7 +458,7 @@ it('runs composer update command', function (): void {
     Process::fake();
 
     // Act
-    $this->artisan(InstallCommand::class, ['--all' => true]);
+    $this->artisan(InstallCommand::class, ['--code-quality' => true]);
 
     // Assert
     Process::assertRan('composer update -Wn');
@@ -479,19 +479,19 @@ it('fails if cannot run composer update', function (): void {
     ]);
 
     // Act & Assert
-    $this->artisan(InstallCommand::class, ['--all' => true])
+    $this->artisan(InstallCommand::class, ['--code-quality' => true])
         ->expectsOutputToContain('Failed to update composer')
         ->assertExitCode(1);
 });
 
-it('shows a snippet to add to composer.json', function (): void {
+it('shows a snippet to add to composer.json when installing code quality packages', function (): void {
     // Arrange
     File::shouldReceive('copy')
         ->andReturn(true);
     Process::fake();
 
     // Act & Assert
-    $this->artisan(InstallCommand::class, ['--all' => true])
+    $this->artisan(InstallCommand::class, ['--code-quality' => true])
         ->expectsOutput('For your convenience, you can add these lines to composer.json')
         ->expectsOutput('"test": "@php artisan test",')
         ->expectsOutput('"test-coverage": "@php artisan test --parallel --coverage",')
