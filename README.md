@@ -35,7 +35,7 @@ Please review [our security policy](../../security/policy) on how to report secu
 
 ## Credits
 
-- [Mircha Emanuel D'Angelo](https://github.com/ryuujin)
+- [Mircha Emanuel D'Angelo](https://github.com/mirchaemanuel)
 
 ## License
 
