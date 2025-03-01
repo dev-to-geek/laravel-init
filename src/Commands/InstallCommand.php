@@ -41,7 +41,7 @@ class InstallCommand extends Command
         // - install larastan via composer
         spin(
             callback: function (): void {
-                $process = Process::run('composer require --dev "larastan/larastan:^3.0" -n');
+                $process = Process::run('composer require --dev "larastan/larastan:^3.1" -n');
 
                 if ($process->failed()) {
                     self::fail('❌ Failed to install larastan');
