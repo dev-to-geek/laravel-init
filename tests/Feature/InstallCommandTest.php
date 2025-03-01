@@ -136,7 +136,7 @@ it('installs larastan with the right command', function (): void {
         ->andReturn(true);
 
     Process::fake([
-        'composer require --dev "larastan/larastan:^3.0" -n' => Process::result(
+        'composer require --dev "larastan/larastan:^3.1" -n' => Process::result(
             exitCode: 0
         ),
         '*' => Process::result( // fake all other commands
