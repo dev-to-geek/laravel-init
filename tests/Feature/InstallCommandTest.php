@@ -148,7 +148,7 @@ it('installs larastan with the right command', function (): void {
     $this->artisan('laravel-init:install');
 
     // Assert
-    Process::assertRan('composer require --dev "larastan/larastan:^3.0" -n');
+    Process::assertRan('composer require --dev "larastan/larastan:^3.1" -n');
 });
 
 it('copy larastan stub configuration file', function (): void {
