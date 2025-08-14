@@ -151,7 +151,7 @@ class InstallCommand extends Command
 
         }
 
-         // - install laravel boost via composer using Processees
+        // - install laravel boost via composer using Processees
         spin(
             callback: function (): void {
 
