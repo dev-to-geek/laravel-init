@@ -151,6 +151,20 @@ class InstallCommand extends Command
 
         }
 
+        // - install laravel boost via composer using Processees
+        spin(
+            callback: function (): void {
+
+                $process = Process::run('composer require laravel/boost --dev -n');
+                if ($process->failed()) {
+                    self::fail('❌ Failed to install laravel boost');
+                }
+            },
+            message: 'Installing laravel boost...'
+        );
+
+        $this->info('✅ Laravel Boost installed successfully');
+
         // running composer update
         spin(
             callback: function (): void {
@@ -169,6 +183,7 @@ class InstallCommand extends Command
         $this->info('"analyse": "vendor/bin/phpstan analyse --memory-limit=2G",');
         $this->info('"format": "vendor/bin/pint",');
         $this->info('"refactor": "vendor/bin/rector"');
+        $this->info("\nRemember to run: `php artisan boost:install` in order install Laravel Boost MCP Server.");
 
         return self::SUCCESS;
     }

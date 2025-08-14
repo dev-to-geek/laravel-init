@@ -419,6 +419,40 @@ it('fails if cannot install pail', function (): void {
         ->assertExitCode(1);
 });
 
+it('installs laravel boost with the right command', function (): void {
+    Process::fake([
+        'composer require laravel/boost --dev -n' => Process::result(
+            exitCode: 0
+        ),
+        '*' => Process::result( // fake all other commands
+            exitCode: 0
+        ),
+    ]);
+
+    // Act
+    $this->artisan('laravel-init:install');
+
+    // Assert
+    Process::assertRan('composer require laravel/boost --dev -n');
+});
+
+it('fails if cannot install laravel boost', function (): void {
+    // Arrange
+    Process::fake([
+        'composer require laravel/boost --dev -n' => Process::result(
+            exitCode: 1
+        ),
+        '*' => Process::result( // fake all other commands
+            exitCode: 0
+        ),
+    ]);
+
+    // Act & Assert
+    $this->artisan('laravel-init:install')
+        ->expectsOutputToContain('Failed to install laravel boost')
+        ->assertExitCode(1);
+});
+
 it('accepts remove-me option', function (): void {
     // Arrange
     File::shouldReceive('copy')

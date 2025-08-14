@@ -21,6 +21,17 @@ composer require dev-to-geek/laravel-init
 php artisan laravel-init:install [--remove-me]
 ```
 
+This command will automatically install and configure the following tools for your Laravel project:
+
+- **Laravel Pint** – Automated code formatting.
+- **PHPStan & Larastan** – Static analysis for improved code quality.
+- **Pest PHP** (with Mockery and plugins) – Modern testing framework with mocking support.
+- **Laravel Pail** – Enhanced logging and debugging utilities.
+- **Rector** – Automated code refactoring.
+- **Laravel Boost** – Additional productivity enhancements.
+
+No manual setup is required; everything is ready to use after running the command.
+
 ## Changelog
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
