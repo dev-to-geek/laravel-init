@@ -2,6 +2,16 @@
 
 All notable changes to `laravel-init` will be documented in this file.
 
+## v0.1.6 - 2025-08-14
+
+### What's Changed
+
+* build(deps): bump dependabot/fetch-metadata from 2.3.0 to 2.4.0 by @dependabot[bot] in https://github.com/dev-to-geek/laravel-init/pull/9
+* build(deps): bump aglipanci/laravel-pint-action from 2.5 to 2.6 by @dependabot[bot] in https://github.com/dev-to-geek/laravel-init/pull/12
+* Feature/laravel boost by @mirchaemanuel in https://github.com/dev-to-geek/laravel-init/pull/14
+
+**Full Changelog**: https://github.com/dev-to-geek/laravel-init/compare/v0.1.5...v0.1.6
+
 ## v0.1.4 - 2025-01-24
 
 included larastan directive in phpstan.neon.dist stub file
