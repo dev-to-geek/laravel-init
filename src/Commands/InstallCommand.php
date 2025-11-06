@@ -12,7 +12,7 @@ use function Laravel\Prompts\spin;
 
 class InstallCommand extends Command
 {
-    public $signature = 'laravel-init:install {--remove-me : Remove the laravel-init package after installation}';
+    public $signature = 'laravel-init:install';
 
     public $description = 'Install Pint, PhpStan, Pest, Pail.';
 
@@ -142,28 +142,6 @@ class InstallCommand extends Command
         );
 
         $this->info('✅ Laravel Boost installed successfully');
-
-        if ($this->option('remove-me')) {
-            spin(
-                callback: function (): void {
-                    $process = Process::run('composer remove dev-to-geek/laravel-init -n');
-                    if ($process->failed()) {
-                        self::fail('❌ Failed to remove laravel-init');
-                    }
-
-                    $process = Process::run('composer install -n');
-                    if ($process->failed()) {
-                        self::fail('❌ Failed to execute composer install');
-                    }
-
-                },
-                message: 'Removing laravel-init...'
-            );
-
-            $this->info('So long, and thanks for all the fish!');
-            $this->info('✅ laravel-init removed successfully');
-
-        }
 
         // running composer update
         spin(

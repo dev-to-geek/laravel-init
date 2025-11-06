@@ -460,31 +460,6 @@ it('fails if cannot install laravel boost', function (): void {
         ->assertExitCode(1);
 });
 
-it('accepts remove-me option', function (): void {
-    // Arrange
-    File::shouldReceive('copy')
-        ->andReturn(true);
-    Process::fake();
-
-    // Act
-    $this->artisan('laravel-init:install --remove-me')
-        ->assertExitCode(0);
-});
-
-it('removes itself from composer if option remove-me is true', function (): void {
-    // Arrange
-    File::shouldReceive('copy')
-        ->andReturn(true);
-    Process::fake();
-
-    // Act
-    $this->artisan('laravel-init:install --remove-me');
-
-    // Assert
-    Process::assertRan('composer remove dev-to-geek/laravel-init -n');
-
-});
-
 it('runs composer update command', function (): void {
     // Arrange
     File::shouldReceive('copy')
