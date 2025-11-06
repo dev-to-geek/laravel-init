@@ -16,46 +16,6 @@ class InstallCommand extends Command
 
     public $description = 'Install Pint, PhpStan, Pest, Pail.';
 
-    /**
-     * Execute a composer command and fail if it returns an error.
-     */
-    protected function runComposerCommand(string $command, string $errorMessage): void
-    {
-        $process = Process::run($command);
-
-        if ($process->failed()) {
-            $this->fail($errorMessage);
-        }
-    }
-
-    /**
-     * Copy a stub configuration file to the project root.
-     */
-    protected function copyStubFile(string $stubFileName, string $destinationFileName): void
-    {
-        $source = __DIR__."/../../stubs/{$stubFileName}";
-        $destination = base_path($destinationFileName);
-
-        $result = File::copy($source, $destination);
-
-        if (! $result) {
-            $this->fail("❌ Failed to copy {$destinationFileName} configuration file");
-        }
-    }
-
-    /**
-     * Install a package with a spinner and success message.
-     */
-    protected function installPackageWithSpinner(string $packageName, callable $callback): void
-    {
-        spin(
-            callback: $callback,
-            message: "Installing {$packageName}..."
-        );
-
-        $this->info("✅ {$packageName} installed successfully");
-    }
-
     public function handle(): int
     {
 
@@ -105,5 +65,45 @@ class InstallCommand extends Command
         $this->info("\nRemember to run: `php artisan boost:install` in order install Laravel Boost MCP Server.");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Execute a composer command and fail if it returns an error.
+     */
+    protected function runComposerCommand(string $command, string $errorMessage): void
+    {
+        $process = Process::run($command);
+
+        if ($process->failed()) {
+            $this->fail($errorMessage);
+        }
+    }
+
+    /**
+     * Copy a stub configuration file to the project root.
+     */
+    protected function copyStubFile(string $stubFileName, string $destinationFileName): void
+    {
+        $source = __DIR__."/../../stubs/{$stubFileName}";
+        $destination = base_path($destinationFileName);
+
+        $result = File::copy($source, $destination);
+
+        if (! $result) {
+            $this->fail("❌ Failed to copy {$destinationFileName} configuration file");
+        }
+    }
+
+    /**
+     * Install a package with a spinner and success message.
+     */
+    protected function installPackageWithSpinner(string $packageName, callable $callback): void
+    {
+        spin(
+            callback: $callback,
+            message: "Installing {$packageName}..."
+        );
+
+        $this->info("✅ {$packageName} installed successfully");
     }
 }
