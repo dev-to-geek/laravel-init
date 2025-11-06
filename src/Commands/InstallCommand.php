@@ -197,9 +197,9 @@ class InstallCommand extends Command
 
         foreach ($this->errors as $index => $error) {
             $errorNumber = $index + 1;
-            $this->error("─────────────────────────────────────────────────────────────────");
+            $this->error('─────────────────────────────────────────────────────────────────');
             $this->error("Error #{$errorNumber}: {$error['package']}");
-            $this->error("─────────────────────────────────────────────────────────────────");
+            $this->error('─────────────────────────────────────────────────────────────────');
             $this->line("<fg=gray>Command:</> {$error['command']}");
             $this->newLine();
 
