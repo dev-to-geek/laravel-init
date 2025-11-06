@@ -129,6 +129,20 @@ class InstallCommand extends Command
 
         $this->info('✅ Rector installed successfully');
 
+        // - install laravel boost via composer using Processees
+        spin(
+            callback: function (): void {
+
+                $process = Process::run('composer require laravel/boost --dev -n');
+                if ($process->failed()) {
+                    self::fail('❌ Failed to install laravel boost');
+                }
+            },
+            message: 'Installing laravel boost...'
+        );
+
+        $this->info('✅ Laravel Boost installed successfully');
+
         if ($this->option('remove-me')) {
             spin(
                 callback: function (): void {
@@ -150,20 +164,6 @@ class InstallCommand extends Command
             $this->info('✅ laravel-init removed successfully');
 
         }
-
-        // - install laravel boost via composer using Processees
-        spin(
-            callback: function (): void {
-
-                $process = Process::run('composer require laravel/boost --dev -n');
-                if ($process->failed()) {
-                    self::fail('❌ Failed to install laravel boost');
-                }
-            },
-            message: 'Installing laravel boost...'
-        );
-
-        $this->info('✅ Laravel Boost installed successfully');
 
         // running composer update
         spin(
