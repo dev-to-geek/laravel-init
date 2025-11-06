@@ -254,10 +254,17 @@ it('removes phpunit before to install pest', function (): void {
     Process::assertRan('composer require pestphp/pest --dev --with-all-dependencies -n');
 });
 
-it('installs and inits pest with the right commands', function (): void {
+it('installs and inits pest with the right commands when livewire is not installed', function (): void {
     // Arrange
     File::shouldReceive('copy')
         ->andReturnTrue();
+    File::shouldReceive('exists')
+        ->with(base_path('composer.json'))
+        ->andReturnTrue();
+    File::shouldReceive('get')
+        ->with(base_path('composer.json'))
+        ->andReturn(json_encode(['require' => [], 'require-dev' => []]));
+
     Process::fake();
 
     // Act
@@ -270,7 +277,49 @@ it('installs and inits pest with the right commands', function (): void {
     Process::assertRan('composer require mockery/mockery --dev -n');
     Process::assertRan('composer require pestphp/pest-plugin-faker --dev -n');
     Process::assertRan('composer require pestphp/pest-plugin-laravel --dev -n');
+    Process::assertNotRan('composer require pestphp/pest-plugin-livewire --dev -n');
+});
+
+it('installs pest-plugin-livewire when livewire is installed', function (): void {
+    // Arrange
+    File::shouldReceive('copy')
+        ->andReturnTrue();
+    File::shouldReceive('exists')
+        ->with(base_path('composer.json'))
+        ->andReturnTrue();
+    File::shouldReceive('get')
+        ->with(base_path('composer.json'))
+        ->andReturn(json_encode([
+            'require' => ['livewire/livewire' => '^3.0'],
+            'require-dev' => [],
+        ]));
+
+    Process::fake();
+
+    // Act
+    $this->artisan('laravel-init:install');
+
+    // Assert
     Process::assertRan('composer require pestphp/pest-plugin-livewire --dev -n');
+});
+
+it('shows warning when skipping livewire plugin', function (): void {
+    // Arrange
+    File::shouldReceive('copy')
+        ->andReturnTrue();
+    File::shouldReceive('exists')
+        ->with(base_path('composer.json'))
+        ->andReturnTrue();
+    File::shouldReceive('get')
+        ->with(base_path('composer.json'))
+        ->andReturn(json_encode(['require' => [], 'require-dev' => []]));
+
+    Process::fake();
+
+    // Act & Assert
+    $this->artisan('laravel-init:install')
+        ->expectsOutputToContain('Skipping pest-plugin-livewire')
+        ->assertExitCode(0);
 });
 
 it('fails if cannot init pest', function (): void {
@@ -357,10 +406,19 @@ it('fails if cannot install pest plugin laravel', function (): void {
 
 });
 
-it('fails if cannot install pest plugin livewire', function (): void {
+it('fails if cannot install pest plugin livewire when livewire is installed', function (): void {
     // Arrange
     File::shouldReceive('copy')
         ->andReturn(true);
+    File::shouldReceive('exists')
+        ->with(base_path('composer.json'))
+        ->andReturnTrue();
+    File::shouldReceive('get')
+        ->with(base_path('composer.json'))
+        ->andReturn(json_encode([
+            'require' => ['livewire/livewire' => '^3.0'],
+            'require-dev' => [],
+        ]));
 
     Process::fake([
         'composer require pestphp/pest-plugin-livewire --dev*' => Process::result(

@@ -36,7 +36,13 @@ class InstallCommand extends Command
             $this->runComposerCommand('composer require mockery/mockery --dev -n', '❌ Failed to install mockery');
             $this->runComposerCommand('composer require pestphp/pest-plugin-faker --dev -n', '❌ Failed to install pest plugin faker');
             $this->runComposerCommand('composer require pestphp/pest-plugin-laravel --dev -n', '❌ Failed to install pest plugin laravel');
-            $this->runComposerCommand('composer require pestphp/pest-plugin-livewire --dev -n', '❌ Failed to install pest plugin livewire');
+
+            // Only install Livewire plugin if Livewire is already installed
+            if ($this->isPackageInstalled('livewire/livewire')) {
+                $this->runComposerCommand('composer require pestphp/pest-plugin-livewire --dev -n', '❌ Failed to install pest plugin livewire');
+            } else {
+                $this->warn('⚠️  Skipping pest-plugin-livewire (Livewire not detected in your project)');
+            }
         });
 
         $this->installPackageWithSpinner('Pail', function (): void {
@@ -77,6 +83,28 @@ class InstallCommand extends Command
         if ($process->failed()) {
             $this->fail($errorMessage);
         }
+    }
+
+    /**
+     * Check if a package is installed in the current project.
+     */
+    protected function isPackageInstalled(string $packageName): bool
+    {
+        $composerJsonPath = base_path('composer.json');
+
+        if (! File::exists($composerJsonPath)) {
+            return false;
+        }
+
+        $composerJson = json_decode(File::get($composerJsonPath), true);
+
+        if (! $composerJson) {
+            return false;
+        }
+
+        // Check both require and require-dev sections
+        return isset($composerJson['require'][$packageName])
+            || isset($composerJson['require-dev'][$packageName]);
     }
 
     /**
