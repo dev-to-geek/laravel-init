@@ -27,7 +27,7 @@ it('can run laravel-init:install command', function (): void {
     $this->artisan('laravel-init:install')
         ->expectsOutputToContain('Pint installed successfully')
         ->expectsOutputToContain('Larastan installed successfully')
-        ->expectsOutputToContain('pestphp installed successfully')
+        ->expectsOutputToContain('pestphp and plugins installed successfully')
         ->expectsOutputToContain('Pail installed successfully')
         ->assertExitCode(0);
 
@@ -100,7 +100,7 @@ it('fails if cannot copy pint stub configuration file', function (): void {
 
     // Act & Assert
     $this->artisan('laravel-init:install')
-        ->expectsOutputToContain('Failed to copy pint configuration file')
+        ->expectsOutputToContain('Failed to copy pint.json configuration file')
         ->assertExitCode(1);
 
 });
@@ -182,7 +182,7 @@ it('fails if cannot copy phpstan stub configuration file', function (): void {
 
     // Act & Assert
     $this->artisan('laravel-init:install')
-        ->expectsOutputToContain('Failed to copy phpstan configuration file')
+        ->expectsOutputToContain('Failed to copy phpstan.neon.dist configuration file')
         ->assertExitCode(1);
 });
 
@@ -236,7 +236,7 @@ it('fails if cannot copy rector configuration file', function (): void {
     Process::fake();
     // Act & Assert
     $this->artisan('laravel-init:install')
-        ->expectsOutputToContain('Failed to copy rector configuration file')
+        ->expectsOutputToContain('Failed to copy rector.php configuration file')
         ->assertExitCode(1);
 });
 
