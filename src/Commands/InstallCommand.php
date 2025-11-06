@@ -17,6 +17,13 @@ class InstallCommand extends Command
 
     public $description = 'Install Pint, PhpStan, Pest, Pail.';
 
+    /**
+     * Collection of errors that occurred during installation.
+     *
+     * @var array<int, array{package: string, command: string, output: string, error: string}>
+     */
+    protected array $errors = [];
+
     public function handle(): int
     {
 
@@ -71,18 +78,35 @@ class InstallCommand extends Command
         $this->info('"refactor": "vendor/bin/rector"');
         $this->info("\nRemember to run: `php artisan boost:install` in order install Laravel Boost MCP Server.");
 
+        // Show error summary if there were any errors
+        if (count($this->errors) > 0) {
+            $this->showErrorSummary();
+
+            return self::FAILURE;
+        }
+
         return self::SUCCESS;
     }
 
     /**
-     * Execute a composer command and fail if it returns an error.
+     * Execute a composer command and register error if it fails.
+     * Does not stop execution - continues with other packages.
      */
     protected function runComposerCommand(string $command, string $errorMessage): void
     {
         $process = Process::run($command);
 
         if ($process->failed()) {
-            $this->fail($errorMessage);
+            // Register the error for later display
+            $this->errors[] = [
+                'package' => $errorMessage,
+                'command' => $command,
+                'output' => $process->output(),
+                'error' => $process->errorOutput(),
+            ];
+
+            // Show immediate feedback but don't stop
+            $this->warn($errorMessage);
         }
     }
 
@@ -155,5 +179,48 @@ class InstallCommand extends Command
         );
 
         $this->info("✅ {$packageName} installed successfully");
+    }
+
+    /**
+     * Display a detailed summary of all errors that occurred during installation.
+     */
+    protected function showErrorSummary(): void
+    {
+        $this->newLine();
+        $this->error('═══════════════════════════════════════════════════════════════');
+        $this->error('  ❌ INSTALLATION ERRORS SUMMARY');
+        $this->error('═══════════════════════════════════════════════════════════════');
+        $this->newLine();
+
+        $this->warn(sprintf('Total errors: %d', count($this->errors)));
+        $this->newLine();
+
+        foreach ($this->errors as $index => $error) {
+            $errorNumber = $index + 1;
+            $this->error("─────────────────────────────────────────────────────────────────");
+            $this->error("Error #{$errorNumber}: {$error['package']}");
+            $this->error("─────────────────────────────────────────────────────────────────");
+            $this->line("<fg=gray>Command:</> {$error['command']}");
+            $this->newLine();
+
+            // Show composer output if available
+            if (! empty($error['output'])) {
+                $this->line('<fg=yellow>Output:</>');
+                $this->line($error['output']);
+                $this->newLine();
+            }
+
+            // Show error output if available
+            if (! empty($error['error'])) {
+                $this->line('<fg=red>Error Output:</>');
+                $this->line($error['error']);
+                $this->newLine();
+            }
+        }
+
+        $this->error('═══════════════════════════════════════════════════════════════');
+        $this->newLine();
+        $this->line('💡 <fg=yellow>Tip:</> Review the error messages above to resolve the issues.');
+        $this->line('   You can re-run the command after fixing the problems.');
     }
 }

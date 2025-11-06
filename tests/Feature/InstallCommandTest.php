@@ -675,3 +675,79 @@ it('copies new config file without prompting when file does not exist', function
         ->doesntExpectOutput('already exists') // No prompts since files don't exist
         ->assertExitCode(0);
 });
+
+it('continues installation when one package fails and shows error summary', function (): void {
+    // Arrange
+    File::shouldReceive('exists')
+        ->andReturnFalse();
+    File::shouldReceive('get')
+        ->andReturn(json_encode(['require' => [], 'require-dev' => []]));
+    File::shouldReceive('copy')
+        ->andReturnTrue();
+
+    Process::fake([
+        'composer require laravel/pint --dev -n' => Process::result(
+            output: 'Some output from composer',
+            errorOutput: 'Pint installation failed - dependency conflict',
+            exitCode: 1
+        ),
+        '*' => Process::result(exitCode: 0), // All other commands succeed
+    ]);
+
+    // Act & Assert
+    $this->artisan('laravel-init:install')
+        ->expectsOutputToContain('Failed to install pint') // Immediate warning
+        ->expectsOutputToContain('Larastan installed successfully') // Continues with next package
+        ->expectsOutputToContain('INSTALLATION ERRORS SUMMARY') // Shows summary at end
+        ->expectsOutputToContain('Total errors: 1')
+        ->expectsOutputToContain('composer require laravel/pint')
+        ->expectsOutputToContain('Pint installation failed')
+        ->assertExitCode(1); // Returns failure code
+});
+
+it('shows detailed error information for multiple failures', function (): void {
+    // Arrange
+    File::shouldReceive('exists')
+        ->andReturnFalse();
+    File::shouldReceive('get')
+        ->andReturn(json_encode(['require' => [], 'require-dev' => []]));
+    File::shouldReceive('copy')
+        ->andReturnTrue();
+
+    Process::fake([
+        'composer require laravel/pint --dev -n' => Process::result(
+            output: 'Pint output',
+            errorOutput: 'Pint error details',
+            exitCode: 1
+        ),
+        'composer require --dev "larastan/larastan:^3.1" -n' => Process::result(
+            output: 'Larastan output',
+            errorOutput: 'Larastan error details',
+            exitCode: 1
+        ),
+        '*' => Process::result(exitCode: 0),
+    ]);
+
+    // Act & Assert
+    $this->artisan('laravel-init:install')
+        ->expectsOutputToContain('Total errors: 2')
+        ->expectsOutputToContain('Pint error details')
+        ->expectsOutputToContain('Larastan error details')
+        ->assertExitCode(1);
+});
+
+it('returns success when no errors occur', function (): void {
+    // Arrange
+    File::shouldReceive('exists')
+        ->andReturnFalse();
+    File::shouldReceive('get')
+        ->andReturn(json_encode(['require' => [], 'require-dev' => []]));
+    File::shouldReceive('copy')
+        ->andReturnTrue();
+    Process::fake(); // All commands succeed
+
+    // Act & Assert
+    $this->artisan('laravel-init:install')
+        ->doesntExpectOutput('INSTALLATION ERRORS SUMMARY') // No error summary
+        ->assertExitCode(0); // Returns success
+});
