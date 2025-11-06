@@ -8,11 +8,12 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 
+use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\spin;
 
 class InstallCommand extends Command
 {
-    public $signature = 'laravel-init:install';
+    public $signature = 'laravel-init:install {--force : Overwrite existing configuration files without confirmation}';
 
     public $description = 'Install Pint, PhpStan, Pest, Pail.';
 
@@ -109,11 +110,32 @@ class InstallCommand extends Command
 
     /**
      * Copy a stub configuration file to the project root.
+     * Asks for confirmation if the file already exists (unless --force is used).
      */
     protected function copyStubFile(string $stubFileName, string $destinationFileName): void
     {
         $source = __DIR__."/../../stubs/{$stubFileName}";
         $destination = base_path($destinationFileName);
+
+        // Check if file already exists
+        if (File::exists($destination)) {
+            // If --force option is not set, ask for confirmation
+            if (! $this->option('force')) {
+                $shouldOverwrite = confirm(
+                    label: "File {$destinationFileName} already exists. Overwrite?",
+                    default: false
+                );
+
+                if (! $shouldOverwrite) {
+                    $this->warn("⚠️  Skipping {$destinationFileName} (file already exists)");
+
+                    return;
+                }
+            }
+
+            // User confirmed or --force is set
+            $this->info("Overwriting {$destinationFileName}...");
+        }
 
         $result = File::copy($source, $destination);
 

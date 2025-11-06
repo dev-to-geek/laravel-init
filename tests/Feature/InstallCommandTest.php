@@ -567,3 +567,111 @@ it('shows a snippet to add to composer.json', function (): void {
         ->expectsOutput('"refactor": "vendor/bin/rector"');
 
 });
+
+it('skips existing config file when user declines to overwrite', function (): void {
+    // Arrange
+    File::shouldReceive('exists')
+        ->with(base_path('composer.json'))
+        ->andReturnTrue();
+    File::shouldReceive('get')
+        ->with(base_path('composer.json'))
+        ->andReturn(json_encode(['require' => [], 'require-dev' => []]));
+    File::shouldReceive('exists')
+        ->with(base_path('pint.json'))
+        ->andReturnTrue(); // pint.json already exists
+    File::shouldReceive('exists')
+        ->with(base_path('phpstan.neon.dist'))
+        ->andReturnFalse();
+    File::shouldReceive('exists')
+        ->with(base_path('rector.php'))
+        ->andReturnFalse();
+    File::shouldReceive('copy')
+        ->with(Mockery::type('string'), base_path('phpstan.neon.dist'))
+        ->andReturnTrue();
+    File::shouldReceive('copy')
+        ->with(Mockery::type('string'), base_path('rector.php'))
+        ->andReturnTrue();
+    // pint.json should NOT be copied
+
+    Process::fake();
+
+    // Act & Assert
+    $this->artisan('laravel-init:install')
+        ->expectsConfirmation('File pint.json already exists. Overwrite?', 'no')
+        ->expectsOutputToContain('Skipping pint.json')
+        ->assertExitCode(0);
+});
+
+it('overwrites existing config file when user confirms', function (): void {
+    // Arrange
+    File::shouldReceive('exists')
+        ->with(base_path('composer.json'))
+        ->andReturnTrue();
+    File::shouldReceive('get')
+        ->with(base_path('composer.json'))
+        ->andReturn(json_encode(['require' => [], 'require-dev' => []]));
+    File::shouldReceive('exists')
+        ->with(base_path('pint.json'))
+        ->andReturnTrue(); // pint.json already exists
+    File::shouldReceive('exists')
+        ->with(base_path('phpstan.neon.dist'))
+        ->andReturnFalse();
+    File::shouldReceive('exists')
+        ->with(base_path('rector.php'))
+        ->andReturnFalse();
+    File::shouldReceive('copy')
+        ->andReturnTrue(); // All copies succeed
+
+    Process::fake();
+
+    // Act & Assert
+    $this->artisan('laravel-init:install')
+        ->expectsConfirmation('File pint.json already exists. Overwrite?', 'yes')
+        ->expectsOutputToContain('Overwriting pint.json')
+        ->assertExitCode(0);
+});
+
+it('overwrites existing config file with --force without asking', function (): void {
+    // Arrange
+    File::shouldReceive('exists')
+        ->with(base_path('composer.json'))
+        ->andReturnTrue();
+    File::shouldReceive('get')
+        ->with(base_path('composer.json'))
+        ->andReturn(json_encode(['require' => [], 'require-dev' => []]));
+    File::shouldReceive('exists')
+        ->with(base_path('pint.json'))
+        ->andReturnTrue(); // pint.json already exists
+    File::shouldReceive('exists')
+        ->with(base_path('phpstan.neon.dist'))
+        ->andReturnFalse();
+    File::shouldReceive('exists')
+        ->with(base_path('rector.php'))
+        ->andReturnFalse();
+    File::shouldReceive('copy')
+        ->andReturnTrue(); // Should copy with --force
+
+    Process::fake();
+
+    // Act & Assert
+    $this->artisan('laravel-init:install --force')
+        ->expectsOutputToContain('Overwriting pint.json')
+        ->assertExitCode(0);
+});
+
+it('copies new config file without prompting when file does not exist', function (): void {
+    // Arrange
+    File::shouldReceive('exists')
+        ->andReturnFalse(); // No files exist
+    File::shouldReceive('copy')
+        ->andReturnTrue();
+    File::shouldReceive('get')
+        ->andReturn(json_encode(['require' => [], 'require-dev' => []]));
+
+    Process::fake();
+
+    // Act & Assert
+    $this->artisan('laravel-init:install')
+        ->doesntExpectOutput('already exists') // No prompts since files don't exist
+        ->assertExitCode(0);
+});
