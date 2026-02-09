@@ -12,54 +12,149 @@ use function Laravel\Prompts\spin;
 
 class InstallCommand extends Command
 {
-    public $signature = 'laravel-init:install {--remove-me : Remove the laravel-init package after installation}';
+    private const array VALID_TOOLS = ['pint', 'larastan', 'pest', 'pail', 'rector', 'boost'];
 
-    public $description = 'Install Pint, PhpStan, Pest, Pail.';
+    public $signature = 'laravel-init:install
+        {--remove-me : Remove the laravel-init package after installation}
+        {--only=* : Install only specific tools (pint, larastan, pest, pail, rector, boost)}
+        {--force : Overwrite existing configuration files}';
+
+    public $description = 'Install Pint, PhpStan, Pest, Pail, Rector, and Laravel Boost.';
 
     public function handle(): int
     {
+        /** @var array<int, string> $only */
+        $only = $this->option('only');
+        $force = (bool) $this->option('force');
 
-        /**
-         * install pint via composer
-         */
+        if ($only !== []) {
+            $invalid = array_diff($only, self::VALID_TOOLS);
+            if ($invalid !== []) {
+                $this->error('❌ Invalid tool(s): '.implode(', ', $invalid).'. Valid tools: '.implode(', ', self::VALID_TOOLS));
+
+                return self::FAILURE;
+            }
+        }
+
+        if ($only === [] || in_array('pint', $only, true)) {
+            $this->installToolWithStub(
+                'composer require laravel/pint --dev -n',
+                'Installing pint...',
+                'Failed to install pint',
+                'pint.json.stub',
+                'pint.json',
+                'Failed to copy pint configuration file',
+                $force,
+            );
+            $this->info('✅ Pint installed successfully');
+        }
+
+        if ($only === [] || in_array('larastan', $only, true)) {
+            $this->installToolWithStub(
+                'composer require --dev "larastan/larastan:^3.1" -n',
+                'Installing larastan...',
+                'Failed to install larastan',
+                'phpstan.neon.dist.stub',
+                'phpstan.neon.dist',
+                'Failed to copy phpstan configuration file',
+                $force,
+            );
+            $this->info('✅ Larastan installed successfully');
+        }
+
+        if ($only === [] || in_array('pest', $only, true)) {
+            $this->installPest();
+            $this->info('✅ pestphp installed successfully');
+        }
+
+        if ($only === [] || in_array('pail', $only, true)) {
+            $this->runComposerStep('composer require laravel/pail -n', 'Installing pail...', 'Failed to install pail');
+            $this->info('✅ Pail installed successfully');
+        }
+
+        if ($only === [] || in_array('rector', $only, true)) {
+            $this->installToolWithStub(
+                'composer require rector/rector -n --dev',
+                'Installing rector...',
+                'Failed to install rector',
+                'rector.php.stub',
+                'rector.php',
+                'Failed to copy rector configuration file',
+                $force,
+            );
+            $this->info('✅ Rector installed successfully');
+        }
+
+        if ($only === [] || in_array('boost', $only, true)) {
+            $this->runComposerStep('composer require laravel/boost --dev -n', 'Installing laravel boost...', 'Failed to install laravel boost');
+            $this->info('✅ Laravel Boost installed successfully');
+        }
+
+        $this->runComposerStep('composer update -Wn', 'Updating composer...', 'Failed to update composer');
+        $this->info('✅ Composer updated successfully');
+
+        if ($this->option('remove-me')) {
+            $this->runComposerStep('composer remove dev-to-geek/laravel-init -n', 'Removing laravel-init...', 'Failed to remove laravel-init');
+
+            $this->info('So long, and thanks for all the fish!');
+            $this->info('✅ laravel-init removed successfully');
+
+            return self::SUCCESS;
+        }
+
+        $this->info('For your convenience, you can add these lines to composer.json');
+        $this->info('"test": "@php artisan test",');
+        $this->info('"test-coverage": "@php artisan test --parallel --coverage",');
+        $this->info('"analyse": "vendor/bin/phpstan analyse --memory-limit=2G",');
+        $this->info('"format": "vendor/bin/pint",');
+        $this->info('"refactor": "vendor/bin/rector"');
+        $this->info("\nRemember to run: `php artisan boost:install` in order install Laravel Boost MCP Server.");
+
+        return self::SUCCESS;
+    }
+
+    private function runComposerStep(string $command, string $spinMessage, string $failMessage): void
+    {
         spin(
-            callback: function (): void {
-                $pintProcess = Process::run('composer require laravel/pint --dev -n');
-
-                if ($pintProcess->failed()) {
-                    self::fail('❌ Failed to install pint');
-                }
-
-                $result = File::copy(__DIR__.'/../../stubs/pint.json.stub', base_path('pint.json'));
-                if (! $result) {
-                    self::fail('❌ Failed to copy pint configuration file');
-                }
-            },
-            message: 'Installing pint...');
-        $this->info('✅ Pint installed successfully');
-
-        // - install larastan via composer
-        spin(
-            callback: function (): void {
-                $process = Process::run('composer require --dev "larastan/larastan:^3.1" -n');
-
+            callback: function () use ($command, $failMessage): void {
+                $process = Process::run($command);
                 if ($process->failed()) {
-                    self::fail('❌ Failed to install larastan');
-                }
-
-                $result = File::copy(__DIR__.'/../../stubs/phpstan.neon.dist.stub', base_path('phpstan.neon.dist'));
-                if (! $result) {
-                    self::fail('❌ Failed to copy phpstan configuration file');
+                    self::fail('❌ '.$failMessage);
                 }
             },
-            message: 'Installing larastan...');
+            message: $spinMessage,
+        );
+    }
 
-        $this->info('✅ Larastan installed successfully');
+    private function installToolWithStub(string $command, string $spinMessage, string $failMessage, string $stub, string $target, string $copyFailMessage, bool $force): void
+    {
+        spin(
+            callback: function () use ($command, $failMessage, $stub, $target, $copyFailMessage, $force): void {
+                $process = Process::run($command);
+                if ($process->failed()) {
+                    self::fail('❌ '.$failMessage);
+                }
 
-        // - install pest via composer using Processees
+                $targetPath = base_path($target);
+
+                if (! $force && File::exists($targetPath)) {
+                    return;
+                }
+
+                $result = File::copy(__DIR__.'/../../stubs/'.$stub, $targetPath);
+                if (! $result) {
+                    self::fail('❌ '.$copyFailMessage);
+                }
+            },
+            message: $spinMessage,
+        );
+    }
+
+    private function installPest(): void
+    {
         spin(
             callback: function (): void {
-                $process = Process::run('composer remove phpunit/phpunit -n');
+                Process::run('composer remove phpunit/phpunit -n');
 
                 $process = Process::run('composer require pestphp/pest --dev --with-all-dependencies -n');
                 if ($process->failed()) {
@@ -85,101 +180,8 @@ class InstallCommand extends Command
                 if ($process->failed()) {
                     self::fail('❌ Failed to install pest plugin livewire');
                 }
-
             },
-            message: 'Installing pestphp and plugins...');
-
-        $this->info('✅ pestphp installed successfully');
-
-        // - install pail via composer using Processees
-        spin(
-            callback: function (): void {
-
-                $process = Process::run('composer require laravel/pail -n');
-                if ($process->failed()) {
-                    self::fail('❌ Failed to install pail');
-                }
-            },
-            message: 'Installing pail...'
+            message: 'Installing pestphp and plugins...',
         );
-
-        $this->info('✅ Pail installed successfully');
-
-        // - install rector via composer using Processees
-        spin(
-            callback: function (): void {
-
-                $process = Process::run('composer require rector/rector -n --dev');
-                if ($process->failed()) {
-                    self::fail('❌ Failed to install rector');
-                }
-
-                $result = File::copy(__DIR__.'/../../stubs/rector.php.stub', base_path('rector.php'));
-                if (! $result) {
-                    self::fail('❌ Failed to copy rector configuration file');
-                }
-            },
-            message: 'Installing rector...'
-        );
-
-        $this->info('✅ Rector installed successfully');
-
-        if ($this->option('remove-me')) {
-            spin(
-                callback: function (): void {
-                    $process = Process::run('composer remove dev-to-geek/laravel-init -n');
-                    if ($process->failed()) {
-                        self::fail('❌ Failed to remove laravel-init');
-                    }
-
-                    $process = Process::run('composer install -n');
-                    if ($process->failed()) {
-                        self::fail('❌ Failed to execute composer install');
-                    }
-
-                },
-                message: 'Removing laravel-init...'
-            );
-
-            $this->info('So long, and thanks for all the fish!');
-            $this->info('✅ laravel-init removed successfully');
-
-        }
-
-        // - install laravel boost via composer using Processees
-        spin(
-            callback: function (): void {
-
-                $process = Process::run('composer require laravel/boost --dev -n');
-                if ($process->failed()) {
-                    self::fail('❌ Failed to install laravel boost');
-                }
-            },
-            message: 'Installing laravel boost...'
-        );
-
-        $this->info('✅ Laravel Boost installed successfully');
-
-        // running composer update
-        spin(
-            callback: function (): void {
-                $process = Process::run('composer update -Wn');
-                if ($process->failed()) {
-                    self::fail('❌ Failed to update composer');
-                }
-            },
-            message: 'Updating composer...'
-        );
-        $this->info('✅ Composer updated successfully');
-
-        $this->info('For your convenience, you can add these lines to composer.json');
-        $this->info('"test": "@php artisan test",');
-        $this->info('"test-coverage": "@php artisan test --parallel --coverage",');
-        $this->info('"analyse": "vendor/bin/phpstan analyse --memory-limit=2G",');
-        $this->info('"format": "vendor/bin/pint",');
-        $this->info('"refactor": "vendor/bin/rector"');
-        $this->info("\nRemember to run: `php artisan boost:install` in order install Laravel Boost MCP Server.");
-
-        return self::SUCCESS;
     }
 }

@@ -8,7 +8,6 @@ use Rector\Php83\Rector\ClassMethod\AddOverrideAttributeToOverriddenMethodsRecto
 return RectorConfig::configure()
     ->withPaths([
         __DIR__.'/src',
-        __DIR__.'/config',
         __DIR__.'/tests',
     ])
     ->withSkip([
@@ -20,6 +19,6 @@ return RectorConfig::configure()
         typeDeclarations: true,
         privatization: true,
         earlyReturn: true,
-        strictBooleans: true,
+        codingStyle: true,
     )
     ->withPhpSets();

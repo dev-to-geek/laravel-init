@@ -14,6 +14,5 @@ class LaravelInitServiceProvider extends ServiceProvider
         $this->commands([
             InstallCommand::class,
         ]);
-        $this->mergeConfigFrom(__DIR__.'/../config/laravel-init.php', 'laravel-init');
     }
 }
