@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Str;
 
 beforeEach(function (): void {
     File::spy();
@@ -496,6 +497,41 @@ it('fails if cannot run composer update', function (): void {
         ->assertExitCode(1);
 });
 
+it('fails if cannot remove itself', function (): void {
+    // Arrange
+    File::shouldReceive('copy')
+        ->andReturn(true);
+
+    Process::fake([
+        'composer remove dev-to-geek/laravel-init -n' => Process::result(
+            exitCode: 1
+        ),
+        '*' => Process::result(
+            exitCode: 0
+        ),
+    ]);
+
+    // Act & Assert
+    $this->artisan('laravel-init:install --remove-me')
+        ->expectsOutputToContain('Failed to remove laravel-init')
+        ->assertExitCode(1);
+});
+
+it('executes remove-me after boost and composer update', function (): void {
+    // Arrange
+    File::shouldReceive('copy')
+        ->andReturn(true);
+    Process::fake();
+
+    // Act
+    $this->artisan('laravel-init:install --remove-me');
+
+    // Assert - verify all expected commands ran
+    Process::assertRan('composer require laravel/boost --dev -n');
+    Process::assertRan('composer update -Wn');
+    Process::assertRan('composer remove dev-to-geek/laravel-init -n');
+});
+
 it('shows a snippet to add to composer.json', function (): void {
     // Arrange
     File::shouldReceive('copy')
@@ -511,4 +547,93 @@ it('shows a snippet to add to composer.json', function (): void {
         ->expectsOutput('"format": "vendor/bin/pint",')
         ->expectsOutput('"refactor": "vendor/bin/rector"');
 
+});
+
+it('installs only pint when --only=pint is passed', function (): void {
+    // Arrange
+    File::shouldReceive('copy')
+        ->andReturn(true);
+    Process::fake();
+
+    // Act
+    $this->artisan('laravel-init:install --only=pint')
+        ->expectsOutputToContain('Pint installed successfully')
+        ->assertExitCode(0);
+
+    // Assert
+    Process::assertRan('composer require laravel/pint --dev -n');
+    Process::assertDidntRun('composer require --dev "larastan/larastan:^3.1" -n');
+    Process::assertDidntRun('composer require pestphp/pest --dev --with-all-dependencies -n');
+    Process::assertDidntRun('composer require laravel/pail -n');
+    Process::assertDidntRun('composer require rector/rector -n --dev');
+    Process::assertDidntRun('composer require laravel/boost --dev -n');
+    Process::assertRan('composer update -Wn');
+});
+
+it('installs multiple tools when --only is passed multiple times', function (): void {
+    // Arrange
+    File::shouldReceive('copy')
+        ->andReturn(true);
+    Process::fake();
+
+    // Act
+    $this->artisan('laravel-init:install --only=pint --only=rector')
+        ->expectsOutputToContain('Pint installed successfully')
+        ->expectsOutputToContain('Rector installed successfully')
+        ->assertExitCode(0);
+
+    // Assert
+    Process::assertRan('composer require laravel/pint --dev -n');
+    Process::assertRan('composer require rector/rector -n --dev');
+    Process::assertDidntRun('composer require --dev "larastan/larastan:^3.1" -n');
+    Process::assertDidntRun('composer require pestphp/pest --dev --with-all-dependencies -n');
+});
+
+it('fails with invalid tool name in --only', function (): void {
+    // Arrange
+    Process::fake();
+
+    // Act & Assert
+    $this->artisan('laravel-init:install --only=invalid')
+        ->expectsOutputToContain('Invalid tool(s): invalid')
+        ->assertExitCode(1);
+});
+
+it('skips config copy when file exists and --force is not passed', function (): void {
+    // Arrange
+    File::shouldReceive('exists')
+        ->andReturn(true);
+    File::shouldReceive('copy')
+        ->never();
+    Process::fake();
+
+    // Act
+    $this->artisan('laravel-init:install --only=pint')
+        ->expectsOutputToContain('Pint installed successfully')
+        ->assertExitCode(0);
+
+    // Assert
+    Process::assertRan('composer require laravel/pint --dev -n');
+});
+
+it('overwrites config when file exists and --force is passed', function (): void {
+    // Arrange
+    File::shouldReceive('exists')
+        ->andReturn(true);
+    File::shouldReceive('copy')
+        ->andReturn(true);
+    Process::fake();
+
+    // Act
+    $this->artisan('laravel-init:install --only=pint --force')
+        ->expectsOutputToContain('Pint installed successfully')
+        ->assertExitCode(0);
+
+    // Assert
+    $expectedSource = realpath(__DIR__.'/../../stubs/pint.json.stub');
+
+    File::shouldHaveReceived('copy')
+        ->withArgs(fn ($source, $destination): bool => realpath($source) === $expectedSource &&
+            str_ends_with((string) $destination, 'pint.json'))
+        ->once();
 });
