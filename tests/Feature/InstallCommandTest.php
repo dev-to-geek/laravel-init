@@ -398,6 +398,10 @@ it('fails if cannot install pail', function (): void {
 });
 
 it('installs laravel boost with the right command', function (): void {
+    // Arrange
+    File::shouldReceive('copy')
+        ->andReturn(true);
+
     Process::fake([
         'composer require laravel/boost --dev -n' => Process::result(
             exitCode: 0
@@ -416,6 +420,9 @@ it('installs laravel boost with the right command', function (): void {
 
 it('fails if cannot install laravel boost', function (): void {
     // Arrange
+    File::shouldReceive('copy')
+        ->andReturn(true);
+
     Process::fake([
         'composer require laravel/boost --dev -n' => Process::result(
             exitCode: 1
