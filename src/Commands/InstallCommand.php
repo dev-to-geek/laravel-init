@@ -76,11 +76,6 @@ class InstallCommand extends Command
                     self::fail('❌ Failed to install mockery');
                 }
 
-                $process = Process::run('composer require pestphp/pest-plugin-faker --dev -n');
-                if ($process->failed()) {
-                    self::fail('❌ Failed to install pest plugin faker');
-                }
-
                 $process = Process::run('composer require pestphp/pest-plugin-laravel --dev -n');
                 if ($process->failed()) {
                     self::fail('❌ Failed to install pest plugin laravel');
