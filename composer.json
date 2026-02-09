@@ -18,17 +18,17 @@
     "require": {
         "php": "^8.3",
         "spatie/laravel-package-tools": "^1.19",
-        "illuminate/contracts": "^10.0||^11.0||^12.0"
+        "illuminate/contracts": "^12.0"
     },
     "require-dev": {
         "larastan/larastan": "^v3.1",
         "laravel/pint": "^v1.21",
         "mockery/mockery": "*",
-        "nunomaduro/collision": "^8.6.1||^7.10.0",
-        "orchestra/testbench": "^9.11.0||^8.22.0",
-        "pestphp/pest": "^v3.7.4",
-        "pestphp/pest-plugin-arch": "^3.0",
-        "pestphp/pest-plugin-laravel": "^3.1",
+        "nunomaduro/collision": "^8.6.1",
+        "orchestra/testbench": "^10.0",
+        "pestphp/pest": "^v4.0",
+        "pestphp/pest-plugin-arch": "^4.0",
+        "pestphp/pest-plugin-laravel": "^4.0",
         "phpstan/extension-installer": "^1.4.3",
         "phpstan/phpstan-deprecation-rules": "^2.0.0",
         "phpstan/phpstan-phpunit": "^2.0.1",

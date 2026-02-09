@@ -268,7 +268,6 @@ it('installs and inits pest with the right commands', function (): void {
     Process::assertRan('composer require pestphp/pest --dev --with-all-dependencies -n');
     Process::assertRan('./vendor/bin/pest --init');
     Process::assertRan('composer require mockery/mockery --dev -n');
-    Process::assertRan('composer require pestphp/pest-plugin-faker --dev -n');
     Process::assertRan('composer require pestphp/pest-plugin-laravel --dev -n');
     Process::assertRan('composer require pestphp/pest-plugin-livewire --dev -n');
 });
@@ -312,27 +311,6 @@ it('fails if cannot install mockery', function (): void {
     $this->artisan('laravel-init:install')
         ->assertExitCode(1)
         ->expectsOutputToContain('Failed to install mockery');
-
-});
-
-it('fails if cannot install faker', function (): void {
-    // Arrange
-    File::shouldReceive('copy')
-        ->andReturn(true);
-
-    Process::fake([
-        'composer require pestphp/pest-plugin-faker --dev*' => Process::result(
-            exitCode: 1
-        ),
-        '*' => Process::result( // fake all other commands
-            exitCode: 0
-        ),
-    ]);
-
-    // Act
-    $this->artisan('laravel-init:install')
-        ->assertExitCode(1)
-        ->expectsOutputToContain('Failed to install pest plugin faker');
 
 });
 
