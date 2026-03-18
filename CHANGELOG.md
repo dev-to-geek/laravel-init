@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-init` will be documented in this file.
 
+## v0.2.1 - 2026-03-18
+
+### What's Changed
+
+* Add Laravel 13 support by @mirchaemanuel in https://github.com/dev-to-geek/laravel-init/pull/25
+
+**Full Changelog**: https://github.com/dev-to-geek/laravel-init/compare/v0.2.0...v0.2.1
+
 ## v0.2.0 - 2026-02-09
 
 ### Breaking Changes
